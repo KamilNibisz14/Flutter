@@ -28,19 +28,18 @@ class MainPage extends StatelessWidget {
         ),
       ),
       body: BlocBuilder<GameListBloc, GameListState>(
-        builder: (context, state){
-          if(state is GameListInitial){
+        builder: (context, state) {
+          if (state is GameListInitial) {
             context.read<GameListBloc>().add(LoadGameEvent());
-            return const CircularProgressIndicator();
-          }else if(state is GameListLoadingState) {
-            return const Center(child: CircularProgressIndicator(),);
-          }else if(state is GameListLoadedState){
-            return buildGameListModel(state.apiResult);
-          }else if(state is GameListErrorState){
+            return buildGameListModel([], true);
+          } else if (state is GameListLoadingState) {
+            return buildGameListModel(state.gameList, true);
+          } else if (state is GameListLoadedState) {
+            return buildGameListModel(state.gameList, false);
+          } else if (state is GameListErrorState) {
             return const Center(
-              child: Text('Something is wrong'),);
-          }else if(state is GameListUpdatedState){
-            return buildGameListModel(state.updatedGameList);
+              child: Text('Something is wrong'),
+            );
           }
           return const Text("Error");
         },
@@ -48,10 +47,11 @@ class MainPage extends StatelessWidget {
     );
   }
 }
-Widget buildGameListModel(List<Game> apiResult){
+
+Widget buildGameListModel(List<Game> apiResult, bool isLoading) {
   return Stack(
-    children:[
-      GameList(gameList: apiResult,),
+    children: [
+      GameList(gameList: apiResult, isLoading: isLoading),
       Align(alignment: Alignment.topCenter, child: SearchTextField()),
     ],
   );

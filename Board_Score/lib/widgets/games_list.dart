@@ -1,66 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../models/game.dart';
 import 'game_tile.dart';
+import 'package:board_score/bloc/game_list_bloc.dart';
 
-
-class GameList extends StatelessWidget {
-  GameList({required this.gameList, Key? key}) : super(key: key);
-
+class GameList extends StatefulWidget {
   List<Game> gameList;
+  bool isLoading;
+  GameList({required this.gameList, required this.isLoading, Key? key})
+      : super(key: key);
+
+  @override
+  GameListStated createState() => GameListStated();
+}
+
+class GameListStated extends State<GameList> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(() {
+      if (_scrollController.position.pixels ==
+          _scrollController.position.maxScrollExtent) {
+        context.read<GameListBloc>().add(LoadGameEvent());
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(top: 90, left: 40, right: 40),
-      child: GridView.builder(
-        gridDelegate:
-        const SliverGridDelegateWithFixedCrossAxisCount(
-            childAspectRatio: 1/2,
-            crossAxisCount: 2,
-            crossAxisSpacing: 20),
-        itemCount: gameList.length,
-        itemBuilder: (buildContext, index) {
-          return GameTile(
-            gameData: gameList[index],
-          );
-        },
+      child: Column(
+        children: [
+          if (widget.isLoading)
+            const Center(child: CircularProgressIndicator()),
+          Expanded(
+              child: GridView.builder(
+            controller: _scrollController,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                childAspectRatio: 1 / 2,
+                crossAxisCount: 2,
+                crossAxisSpacing: 20),
+            itemCount: widget.gameList.length,
+            itemBuilder: (buildContext, index) {
+              return GameTile(
+                gameData: widget.gameList[index],
+              );
+            },
+          )),
+        ],
       ),
     );
   }
 }
-
-
-/*
-class GameList extends StatelessWidget {
-  const GameList({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-
-    return Container(
-        margin: const EdgeInsets.only(top: 90, left: 40, right: 40),
-        child: SizedBox(
-            child: FutureBuilder(
-                future: GamesService.fetchGames(),
-                builder: ((context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else {
-                    return GridView.builder(
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                              childAspectRatio: 1 / 2,
-                              crossAxisCount: 2,
-                              crossAxisSpacing: 20),
-                      itemCount: snapshot.data!.length,
-                      itemBuilder: (buildContext, index) {
-                        return GameTile(
-                            gameName: snapshot.data![index].name,
-                            image:
-                                Image.network(snapshot.data![index].imageUrl));
-                      },
-                    );
-                  }
-                }))));
-  }
-}*/

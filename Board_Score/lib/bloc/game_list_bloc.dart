@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 
@@ -11,42 +9,36 @@ part 'game_list_state.dart';
 
 class GameListBloc extends Bloc<GameListEvent, GameListState> {
   GamesService gameRepo;
-  late List<Game>? apiResult;
-  late List<Game>? gameList;
+  late List<Game> gameList = [];
+  String searchPhrase = '';
+  int skip = 0;
 
-
-  GameListBloc(
-      this.gameRepo
-      ) : super(GameListInitial()) {
-    on<GameListEvent>((event, emit) async{
-      if(event is LoadGameEvent){
-        emit(GameListLoadingState());
-        apiResult = await gameRepo.fetchGames();
-        gameList = apiResult;
-        if(apiResult == null){
-          emit(GameListErrorState());
-        }else{
-          emit(GameListLoadedState(apiResult: gameList!),);
-       }
-      }
-    });
+  GameListBloc(this.gameRepo) : super(GameListInitial()) {
+    on<LoadGameEvent>(_LoadGameEvent);
     on<SearchEvent>(_SearchEvent);
   }
-  /*
-  void _SearchEvent(SearchEvent event, Emitter<GameListState> emit){
 
-
-
-    emit(GameListUpdatedState(updatedGameList: gameList!));
-  }*/
-
-  void _SearchEvent(SearchEvent event, Emitter<GameListState> emit){
-    final text = event.text;
-    gameList = apiResult!.where((item) =>
-        item.name.toString().toLowerCase().contains(text.toString().toLowerCase())
-    ).toList();
-    emit(GameListUpdatedState(updatedGameList: gameList!));
+  void _LoadGameEvent(GameListEvent event, Emitter<GameListState> emit) async {
+    emit(GameListLoadingState(gameList: gameList));
+    try {
+      List<Game> apiResult =
+          await gameRepo.fetchGames(search: searchPhrase, skip: skip);
+      gameList.addAll(apiResult);
+      emit(
+        GameListLoadedState(gameList: gameList),
+      );
+      skip += 10;
+    } catch (e) {
+      emit(GameListErrorState());
+    }
   }
 
-
+  void _SearchEvent(SearchEvent event, Emitter<GameListState> emit) {
+    if (event.search != searchPhrase) {
+      gameList = [];
+      skip = 0;
+    }
+    searchPhrase = event.search;
+    add(LoadGameEvent());
+  }
 }

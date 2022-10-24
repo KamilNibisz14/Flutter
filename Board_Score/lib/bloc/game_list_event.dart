@@ -7,15 +7,15 @@ abstract class GameListEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class LoadGameEvent extends GameListEvent{}
+class LoadGameEvent extends GameListEvent {}
 
-class SearchEvent extends GameListEvent{
-final String text;
+class SearchEvent extends GameListEvent {
+  final String search;
 
-const SearchEvent({
-required this.text,
-});
+  const SearchEvent({
+    required this.search,
+  });
 
-@override
-List<Object> get props => [text];
+  @override
+  List<Object> get props => [search];
 }

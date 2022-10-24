@@ -1,12 +1,12 @@
 
 class PlayerData{
   final String name;
-  final int points;
-  PlayerData({required this.name, required this.points});
+  int points = 0;
+  PlayerData({required this.name});
 }
 class GameTable{
   final String id;
-  final String winner;
-  final List<PlayerData> players;
-  GameTable({required this.id, required this.winner, required this.players});
+  final String winner = '';
+  final List<PlayerData> players = [];
+  GameTable({required this.id,});
 }

@@ -1,3 +1,4 @@
+import 'package:board_score/bloc/game_score_bloc.dart';
 import 'package:board_score/screens/main_screen.dart';
 import 'package:board_score/services/games-service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,12 +10,17 @@ import 'bloc/game_list_bloc.dart';
 
 void main() async {
   await dotenv.load(fileName: ".env");
-  runApp(
-    BlocProvider<GameListBloc>(
+  runApp(MultiBlocProvider(
+    providers: [
+      BlocProvider<GameListBloc>(
         create: (context) => GameListBloc(GamesService()),
-        child: const MyApp(),
-    )
-  );
+      ),
+      BlocProvider<GameScoreBloc>(
+        create: (context) => GameScoreBloc(),
+      ),
+    ],
+    child: const MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
